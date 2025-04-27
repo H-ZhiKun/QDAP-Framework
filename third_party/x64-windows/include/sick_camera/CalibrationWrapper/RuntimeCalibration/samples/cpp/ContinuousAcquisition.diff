@@ -1,0 +1,207 @@
+diff --git a/ContinuousAcquisition/ContinuousAcquisition.cpp b/ContinuousAcquisition/ContinuousAcquisition.cpp
+index 7975e56..f461284 100644
+--- a/ContinuousAcquisition/ContinuousAcquisition.cpp
++++ b/ContinuousAcquisition/ContinuousAcquisition.cpp
+@@ -1,4 +1,5 @@
+ // Copyright 2016-2021 SICK AG. All rights reserved.
++#include "SickSheetOfLight.h"
+ 
+ #include "CameraSelector.h"
+ #include "ExampleUtils.h"
+@@ -24,6 +25,40 @@ void usage(const std::string& program)
+             << std::endl;
+ }
+ 
++genistream::sheetoflight::ImageSize imageSizeFromCamera(
++  const std::shared_ptr < genistream::CameraParameters >& params)
++{
++  uint16_t aoiWidth = static_cast<uint16_t>(
++    params->region(genistream::RegionId::REGION_1)->width);
++  uint16_t numberOfLines = static_cast<uint16_t>(
++    params->region(genistream::RegionId::SCAN_3D_EXTRACTION_1)->height);
++  return genistream::sheetoflight::ImageSize{ aoiWidth,numberOfLines };
++}
++
++genistream::sheetoflight::SensorTraits sensorTraitsFromCamera(
++  const std::shared_ptr < genistream::CameraParameters >& params)
++{
++  genistream::sheetoflight::SensorTraits sensorTraits;
++  // Get AOI heights, widths and offsets
++  sensorTraits.aoiWidth = static_cast<uint16_t>(
++    params->region(genistream::RegionId::REGION_1)->width);
++  sensorTraits.aoiHeight = static_cast<uint16_t>(
++    params->region(genistream::RegionId::REGION_1)->height);
++  sensorTraits.xT.origin = static_cast<double>(
++    params->region(genistream::RegionId::REGION_1)->offsetX);
++  sensorTraits.xT.scale = 1.0;
++  double offsetZ = static_cast<double>(
++    params->region(genistream::RegionId::REGION_1)->offsetY);
++  const double ranger3SubPixeling = 1.0 / 16.0;
++  bool rangeAxisReversed = params->
++    scan3dExtraction(genistream::Scan3dExtractionId::SCAN_3D_EXTRACTION_1)->
++    rangeAxis == genistream::RangeAxis::REVERSE;
++  sensorTraits.zT.scale =
++    rangeAxisReversed ? -ranger3SubPixeling : ranger3SubPixeling;
++  sensorTraits.zT.origin =
++    rangeAxisReversed ? offsetZ + sensorTraits.aoiHeight : offsetZ;
++  return sensorTraits;
++}
+ 
+ /** Create log file for saving frame information */
+ std::ofstream openLogFile(const std::string& directoryPath)
+@@ -270,6 +305,91 @@ void grabFrames(std::shared_ptr<genistream::ICamera> camera,
+                 uint32_t lineCount,
+                 std::ofstream& logFile)
+ {
++  genistream::sheetoflight::ModelHandle modelHandle;
++  bool success = genistream::sheetoflight::createModelFromFilePath(
++    "..\\CalibrationResult.json", &modelHandle);
++  assert(success);
++
++  std::shared_ptr<genistream::CameraParameters> parameters =
++    camera->getCameraParameters();
++  genistream::sheetoflight::SensorTraits sensorTraits =
++    sensorTraitsFromCamera(parameters);
++  genistream::sheetoflight::ImageSize imageSize =
++    imageSizeFromCamera(parameters);
++  genistream::sheetoflight::WorldRangeTraits worldRangeTraits;
++  genistream::sheetoflight::SplatSettings splatSettings;
++  const int dataSize = imageSize.width * imageSize.lineCount;
++  std::shared_ptr<genistream::RegionParameters> extractionRegion =
++    parameters->region(genistream::RegionId::SCAN_3D_EXTRACTION_1);
++  int scatterEnabled = extractionRegion->
++    component(genistream::ComponentId::SCATTER)->componentEnable;
++  genistream::sheetoflight::PixelFormat format2D[2];
++  format2D[0] = genistream::sheetoflight::MONO_8;
++  genistream::sheetoflight::PixelFormat scatterFormat;
++  if (scatterEnabled)
++  {
++    scatterFormat = extractionRegion->
++      component(genistream::ComponentId::SCATTER)->
++      pixelFormat == genistream::PixelFormat::MONO_16 ?
++      genistream::sheetoflight::PixelFormat::MONO_16 :
++      genistream::sheetoflight::PixelFormat::MONO_8;
++    format2D[1] = scatterFormat;
++  }
++  unsigned int nCoRectified = scatterEnabled ? 2 : 1;
++  genistream::sheetoflight::CoRectifiedDescription coRectifiedDescription
++    = { nCoRectified, format2D };
++
++  success = calculateCalibrationBounds(modelHandle,
++                                       sensorTraits,
++                                       imageSize,
++                                       &worldRangeTraits,
++                                       &splatSettings,
++                                       0);
++  assert(success);
++  genistream::sheetoflight::CalibrationFilterHandle calibrationFilterHandle;
++  success = genistream::sheetoflight::createCalibrationFilter(
++    modelHandle,
++    sensorTraits,
++    imageSize,
++    genistream::sheetoflight::PFNC_COORD_3D_C16,
++    &calibrationFilterHandle);
++  assert(success);
++
++  float missingDataValue = 0.0;
++
++  genistream::sheetoflight::RectificationFilterHandle rectificationFilterHandle;
++  success = genistream::sheetoflight::createRectificationFilter(
++    splatSettings,
++    genistream::sheetoflight::MEAN,
++    worldRangeTraits,
++    imageSize,
++    coRectifiedDescription,
++    missingDataValue,
++    &rectificationFilterHandle);
++  assert(success);
++
++  // allocate some data for the output containers.
++  std::vector<float> rangeOut(dataSize);
++  std::vector<float> X(dataSize);
++  std::vector<float> Z(dataSize);
++  std::vector<unsigned char> reflectanceOut(dataSize);
++  std::vector<unsigned short> scatterOutUint16;
++  std::vector<unsigned char> scatterOutUint8;
++  void* rectifiedImages2D[2];
++  rectifiedImages2D[0] = reflectanceOut.data();
++  if (scatterEnabled &&
++      scatterFormat == genistream::sheetoflight::PixelFormat::MONO_16)
++  {
++    scatterOutUint16 = std::vector<unsigned short>(dataSize);
++    rectifiedImages2D[1] = scatterOutUint16.data();
++  }
++  else if (scatterEnabled &&
++           scatterFormat == genistream::sheetoflight::PixelFormat::MONO_8)
++  {
++    scatterOutUint8 = std::vector<unsigned char>(dataSize);
++    rectifiedImages2D[1] = scatterOutUint8.data();
++  }
++
++  // This is needed to calibrate on the borrowed data. The user is responsible
++  // for transforming the calibration input data to 16 bit if
++  // genistream::PixelFormat::COORD_3D_C12 is used.
++  extractionRegion->component(genistream::ComponentId::RANGE)->pixelFormat =
++    genistream::PixelFormat::COORD_3D_C16;
++
+   // Setup a sufficient amount of buffers
+   const size_t buffersCount = 20;
+   std::shared_ptr<genistream::FrameGrabber> grabber =
+@@ -297,6 +417,46 @@ void grabFrames(std::shared_ptr<genistream::ICamera> camera,
+     {
+       checkFrame(frame, aoiWidth, aoiHeight, lineCount);
+       processFrame(frame, logFile);
++
++      void* inputCoRectified[2] = { reinterpret_cast<void*>(
++      frame->getReflectance()->getData()), nullptr };
++      if (scatterEnabled)
++      {
++        std::shared_ptr<const genistream::frame::IComponent> scatter =
++          frame->getRegion(genistream::RegionId::REGION_1)->getComponent(
++            genistream::ComponentId::SCATTER);
++        inputCoRectified[1] = scatter->getData();
++      }
++      genistream::sheetoflight::applyCalibration(
++        calibrationFilterHandle,
++        frame->getRange()->getData(),
++        X.data(),
++        Z.data());
++      genistream::sheetoflight::rectify(
++        rectificationFilterHandle,
++        X.data(),
++        Z.data(),
++        inputCoRectified,
++        rangeOut.data(),
++        rectifiedImages2D);
++      float sum = 0; //example of accessing rectified range data.
++      int count = 0;
++      for (int pixelIndex = 0; pixelIndex < dataSize; pixelIndex++) {
++        if (rangeOut[pixelIndex] != missingDataValue)
++        {
++          sum += rangeOut[pixelIndex];
++          count += 1;
++        }
++      }
++      if (count == 0)
++      {
++        std::cout << "Buffer is only missing data" << std::endl;
++      }
++      else
++      {
++        std::cout << "Average height value in buffer: "
++          << sum / static_cast<float>(count) << std::endl;
++      }
+     }
+     else
+     {
+@@ -308,6 +468,10 @@ void grabFrames(std::shared_ptr<genistream::ICamera> camera,
+       saveFrame(directoryPath, frameFileName, frame);
+     }
+   }
++
++  genistream::sheetoflight::destroyAllRectificationFilters();
++  genistream::sheetoflight::destroyAllCalibrationFilters();
++  genistream::sheetoflight::destroyAllModels();
+ }
+ 
+ 
