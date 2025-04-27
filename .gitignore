@@ -1,0 +1,46 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+#*.so
+#*.dylib
+#*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+#*.lai
+#*.la
+#*.a
+#*.lib
+
+
+# 忽略build目录
+.clangd
+.vscode
+src/tis_global/EnumClass.h
+src/tis_global/Function.h
+src/kits/required/invoke/Invoke_*.h
+src/kits/required/invoke/Invoke_*.cpp
+src/kits/required/invoke/InvokeCreator.h
+/build/
+/dist/
+/libs/
+/x64-windows-debug/
+/x64-windows-release/
+/x64-windows-relwithdebinfo/
+/.cache/
+/arm64-linux-/
+/arm64-linux/

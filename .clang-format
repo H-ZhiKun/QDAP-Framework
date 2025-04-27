@@ -1,0 +1,203 @@
+Language: Cpp  # 设置代码文件类型为 C++。
+
+# BasedOnStyle: 设置基于 Microsoft 风格作为模板，定制其他风格。
+BasedOnStyle: Microsoft  
+
+# 访问修饰符（如 public, private）的偏移量
+AccessModifierOffset: -2  # 设置访问修饰符前的缩进偏移量为 -2。
+
+# 控制在括号后参数对齐的方式
+AlignAfterOpenBracket: Align  # 括号后的参数、类型、值对齐。
+
+# 数组中结构体元素是否对齐
+AlignArrayOfStructures: None  # 禁止对数组结构的成员进行对齐。
+
+# 是否对连续赋值语句进行对齐
+AlignConsecutiveAssignments:
+  Enabled: false  # 禁用赋值语句的对齐。
+  AcrossEmptyLines: false  # 禁止跨越空行对齐。
+  AcrossComments: false  # 禁止跨越注释对齐。
+  AlignCompound: false  # 禁用复合表达式的对齐。
+
+# 是否对连续位域进行对齐
+AlignConsecutiveBitFields:
+  Enabled: false  # 禁用位域的对齐。
+  AcrossEmptyLines: false  # 禁止跨越空行对齐。
+  AcrossComments: false  # 禁止跨越注释对齐。
+  AlignCompound: false  # 禁用复合位域的对齐。
+
+# 是否对连续声明进行对齐
+AlignConsecutiveDeclarations:
+  Enabled: false  # 禁用连续声明的对齐。
+  AcrossEmptyLines: false  # 禁止跨越空行对齐。
+  AcrossComments: false  # 禁止跨越注释对齐。
+  AlignCompound: false  # 禁用复合声明的对齐。
+
+# 是否对连续宏定义进行对齐
+AlignConsecutiveMacros:
+  Enabled: true  # 禁用连续宏定义的对齐。
+  AcrossEmptyLines: true  # 禁止跨越空行对齐。
+  AcrossComments: true  # 禁止跨越注释对齐。
+  AlignCompound: true  # 禁用复合宏定义的对齐。
+
+# 是否对短的 case 语句进行对齐
+AlignConsecutiveShortCaseStatements:
+  Enabled: false  # 禁用短的 case 语句对齐。
+  AcrossEmptyLines: false  # 禁止跨越空行对齐。
+  AcrossComments: false  # 禁止跨越注释对齐。
+  AlignCaseColons: false  # 禁用对 case 标签的对齐。
+
+# 控制换行时是否对转义字符进行对齐
+AlignEscapedNewlines: Right  # 转义换行符对齐到右边。
+
+# 参数或运算符对齐
+AlignOperands: Align  # 对齐运算符或参数。
+
+# 控制注释行是否对齐
+AlignTrailingComments:
+  Kind: Always  # 总是对齐尾部注释。
+  OverEmptyLines: 0  # 不跨越空行进行尾部注释对齐。
+
+# 是否允许在下一行列出所有参数
+AllowAllArgumentsOnNextLine: true  # 允许所有函数参数在下一行列出。
+
+# 是否允许函数声明的所有参数在下一行列出
+AllowAllParametersOfDeclarationOnNextLine: true  # 允许函数声明的所有参数在下一行列出。
+
+# 是否允许短块（如 if 语句、循环）写在一行
+AllowShortBlocksOnASingleLine: Never  # 不允许将短块写在一行。
+
+# 是否允许短的 case 标签语句在一行内写
+AllowShortCaseLabelsOnASingleLine: false  # 禁止短的 case 标签语句写在一行。
+
+# 是否允许枚举值写在一行
+AllowShortEnumsOnASingleLine: false  # 禁止将枚举值写在一行。
+
+# 是否允许短函数写在一行
+AllowShortFunctionsOnASingleLine: None  # 禁止短函数写在一行。
+
+# 是否允许短的 if 语句写在一行
+AllowShortIfStatementsOnASingleLine: Never  # 禁止短的 if 语句写在一行。
+
+# 是否允许短 Lambda 表达式写在一行
+AllowShortLambdasOnASingleLine: All  # 允许短 Lambda 表达式写在一行。
+
+# 是否允许短的循环语句写在一行
+AllowShortLoopsOnASingleLine: false  # 禁止短的循环语句写在一行。
+
+# 是否强制分隔函数定义和返回类型
+AlwaysBreakAfterDefinitionReturnType: None  # 不强制分隔函数定义和返回类型。
+
+# 是否强制分隔返回类型
+AlwaysBreakAfterReturnType: None  # 不强制分隔返回类型。
+
+# 是否强制多行字符串分隔
+AlwaysBreakBeforeMultilineStrings: false  # 不强制多行字符串分隔。
+
+# 是否强制模板声明分隔
+AlwaysBreakTemplateDeclarations: Yes  # 强制模板声明分隔。
+
+# 自定义属性宏
+AttributeMacros:
+  - __capability  # 定义一个自定义的属性宏。
+
+# 是否压缩函数参数
+BinPackArguments: false  # 不压缩函数参数。
+
+# 是否压缩函数声明参数
+BinPackParameters: false  # 不压缩函数声明参数。
+
+# 位域冒号前后的空格
+BitFieldColonSpacing: Both  # 位域冒号前后加空格。
+
+# 大括号的换行规则
+BraceWrapping:
+  AfterCaseLabel: false  # 不在 case 标签后换行。
+  AfterClass: true  # 在 class 后换行。
+  AfterControlStatement: Always  # 在控制语句后强制换行。
+  AfterEnum: true  # 在枚举后强制换行。
+  AfterExternBlock: true  # 在 extern 块后强制换行。
+  AfterFunction: true  # 在函数定义后强制换行。
+  AfterNamespace: true  # 在命名空间后强制换行。
+  AfterObjCDeclaration: true  # 在 Objective-C 声明后强制换行。
+  AfterStruct: true  # 在结构体后强制换行。
+  AfterUnion: false  # 不在联合体后强制换行。
+  BeforeCatch: true  # 在 catch 语句前换行。
+  BeforeElse: true  # 在 else 语句前换行。
+  BeforeLambdaBody: false  # 不在 Lambda 体前换行。
+  BeforeWhile: false  # 不在 while 语句前换行。
+  IndentBraces: false  # 大括号内不缩进。
+  SplitEmptyFunction: true  # 空函数分隔开。
+  SplitEmptyRecord: true  # 空记录分隔开。
+  SplitEmptyNamespace: true  # 空命名空间分隔开。
+
+# 控制注解换行规则
+BreakAfterAttributes: Never  # 属性注解不强制换行。
+
+# 控制 Java 字段注解换行规则
+BreakAfterJavaFieldAnnotations: false  # 不强制 Java 字段注解换行。
+
+# 数组是否换行
+BreakArrays: true  # 数组换行。
+
+# 控制二进制运算符前后的换行
+BreakBeforeBinaryOperators: None  # 二进制运算符不强制换行。
+
+# 控制概念声明前后的换行
+BreakBeforeConceptDeclarations: Always  # 始终在概念声明前换行。
+
+# 控制大括号前的换行
+BreakBeforeBraces: Custom  # 自定义大括号前换行的规则。
+
+# 控制行内汇编的冒号换行
+BreakBeforeInlineASMColon: OnlyMultiline  # 只有多行汇编时，才在汇编冒号前换行。
+
+# 控制三元运算符的换行
+BreakBeforeTernaryOperators: true  # 强制三元运算符前换行。
+
+# 构造函数初始化列表的换行
+BreakConstructorInitializers: BeforeColon  # 在构造函数初始化列表的冒号前换行。
+
+# 继承列表的换行
+BreakInheritanceList: BeforeColon  # 在继承列表的冒号前换行。
+
+# 字符串常量的换行
+BreakStringLiterals: true  # 字符串常量换行。
+
+# 控制代码列数
+ColumnLimit: 200  # 强制代码列数为 200。
+
+# 注释规则
+CommentPragmas: '^ IWYU pragma:'  # 匹配特定注释的正则表达式。
+
+# 是否压缩命名空间
+CompactNamespaces: false  # 禁止压缩命名空间。
+
+# 构造函数初始化的缩进宽度
+ConstructorInitializerIndentWidth: 4  # 构造函数初始化缩进 4 个空格。
+
+# 函数的缩进宽度
+ContinuationIndentWidth: 4  # 函数参数的换行缩进为 4 个空格。
+
+# C++11 列表初始化风格
+Cpp11BracedListStyle: true  # 启用 C++11 风格的列表初始化。
+
+# 指针对齐方式
+PointerAlignment: Right  # 指针对齐到右边。
+
+# 使用 tab 代替空格
+UseTab: Never  # 禁止使用 tab 符号。
+
+# 注释折行
+ReflowComments: true  # 启用注释折行。
+
+# 设置换行的行数
+MaxEmptyLinesToKeep: 1  # 保持最多 1 个空行。
+
+# 是否对多个命名空间进行合并
+NamespaceIndentation: All  # 多个命名空间进行缩进。
+
+# 控制换行规则的其他设置
+PenaltyBreakComment: 300  # 设置评论折行的惩罚值。
+PenaltyBreakTemplateDeclaration: 10  #
+# 针对宏定义的对齐设置
